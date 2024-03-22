@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("sk-build")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+19c061cb940234efd5ab2fb9507b7d02b61ee093")]
 [assembly: System.Reflection.AssemblyProductAttribute("sk-build")]
 [assembly: System.Reflection.AssemblyTitleAttribute("sk-build")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
