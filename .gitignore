@@ -1,0 +1,9 @@
+bin/
+obj/
+test/
+obj-x86_64/
+obj-i686/
+obj-AArch64/
+obj-RiscV64/
+obj-PowerPC/
+output/
