@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "dgSpecHash": "ZnXpuRmXdCv4gP6ZyQAO0J5U0FqDquIh4uaFX/zss+l2md6Cyc33MV9AH7/kEkHmKJvrfXUUkxJLxNZq+FIHRg==",
+  "success": true,
+  "projectFilePath": "/home/raphaelm/skbuild/sk-build.csproj",
+  "expectedPackageFiles": [
+    "/home/raphaelm/.nuget/packages/commandlineparser/2.9.1/commandlineparser.2.9.1.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/microsoft.dotnet.platformabstractions/3.1.6/microsoft.dotnet.platformabstractions.3.1.6.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/system.codedom/8.0.0/system.codedom.8.0.0.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/system.io.abstractions/19.2.87/system.io.abstractions.19.2.87.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/system.management/8.0.0/system.management.8.0.0.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/system.text.json/8.0.0/system.text.json.8.0.0.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/terminal.gui/2.0.0-pre.210/terminal.gui.2.0.0-pre.210.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/testableio.system.io.abstractions/19.2.87/testableio.system.io.abstractions.19.2.87.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/testableio.system.io.abstractions.wrappers/19.2.87/testableio.system.io.abstractions.wrappers.19.2.87.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/wcwidth/2.0.0/wcwidth.2.0.0.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/microsoft.netcore.app.ref/7.0.16/microsoft.netcore.app.ref.7.0.16.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/microsoft.aspnetcore.app.ref/7.0.16/microsoft.aspnetcore.app.ref.7.0.16.nupkg.sha512",
+    "/home/raphaelm/.nuget/packages/microsoft.netcore.app.host.linux-x64/7.0.16/microsoft.netcore.app.host.linux-x64.7.0.16.nupkg.sha512"
+  ],
+  "logs": []
+}

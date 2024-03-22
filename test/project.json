@@ -1,0 +1,7 @@
+{
+  "Name": "test",
+  "Description": "A simple app",
+  "Copyright": "Copyright text",
+  "License": "MIT License",
+  "Targets": []
+}
