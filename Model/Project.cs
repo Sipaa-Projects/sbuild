@@ -11,6 +11,7 @@ public class Project : ICloneable // for cloning project templates
     public string Description;
     public string Copyright;
     public string License;
+    public string[] PredefinedTargets;
     public Target[] Targets;
 
     public object Clone() 
@@ -19,4 +20,10 @@ public class Project : ICloneable // for cloning project templates
     }
     
     public Project SecureClone() => Clone() as Project;
+
+    public static Project LoadProject(string projectJson)
+    {
+        Project p = JsonConvert.DeserializeObject<Project>(projectJson);
+        return p;
+    }
 }

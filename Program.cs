@@ -1,66 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using CommandLine;
 using Newtonsoft.Json;
 using SipaaKernel.Builder.Model;
-using SipaaKernel.Builder.Views;
-using Terminal.Gui;
 
 namespace SipaaKernel.Builder;
 
-public class MainFrame : Toplevel
+[Verb("config", HelpText = "Configure a plugin")]
+public class ConfigOptions
 {
-    public MainFrame()
-    {
-        var introLabel = new Label()
-        {
-            X = 3,
-            Y = 2,
-            Text = "To start configuring SipaaKernel, go into the 'View' menu (ALT+V)"
-        };
+    [Option('k', "key", Required = true, HelpText = "The target config key")]
+    public string Key { get; set; }
 
-        var menu = new MenuBar (new MenuBarItem [] {
-            new MenuBarItem ("SipaaKernel/x86 Configuration", new MenuItem [] {}),
-            new MenuBarItem ("_File", new MenuItem [] {
-                new MenuItem ("_Reset configuration to previous state", "", () => { 
-                    SKConfig.Load();
-                }),
-                new MenuItem ("_New configuration", "", () => { 
-                    SKConfig.Current = new();
-                }),
-                new MenuItem ("_Save configuration", "", () => { 
-                    SKConfig.Save();
-                }),
-                new MenuItem ("_Save configuration as...", "", () => { 
-                    var s = new SaveDialog();
-                    s.AllowsMultipleSelection = false;
-                    s.Title = "Save configuration as...";
-                    s.Path = "/home";
-                    s.FilesSelected += (sn,e) => {
-                        Remove(s);
-                        SKConfig.Save(Path.Join(s.Path, s.FileName));
-                        MessageBox.Query("Success", "The configuration has been saved.", "OK");
-                        e.Cancel = true;
-                    };
-                    Add(s);
-                }),
-                new MenuItem ("_Quit", "", () => { 
-                    Application.RequestStop (); 
-                })
-            }),
-            new MenuBarItem ("_View", new MenuItem [] {
-                new MenuItem ("_Device Drivers", "", () => { 
-                    Add(new DeviceDriversWindow() { X = 10, Y = 10, Width = 40, Height = 10 });
-                }),
-                new MenuItem ("_General", "", () => { 
-                    Add(new GeneralWindow() { X = 10, Y = 10, Width = 40, Height = 10 });
-                })
-            }),
-        });
-        Add(introLabel);
-        Add(menu);
-    }
+    [Option('s', "key", Required = false, HelpText = "The new value")]
+    public string NewValue { get; set; } = "";
 }
 
 [Verb("new", HelpText = "Create a project in the current directory.")]
@@ -99,13 +51,9 @@ public class BuildOptions {
 }
 
 [Verb("clean", HelpText = "Clean all the output of a project.")]
-public class CleanOptions {
-  //normal options here
-}
-
-[Verb("configure", HelpText = "Configure a project.")]
-public class ConfigureOptions {
-  //normal options here
+public class CleanOptions
+{
+    //normal options here
 }
 
 [Verb("doctor", HelpText = "Check if the required packages are on your PC.")]
@@ -117,7 +65,8 @@ public class DoctorOptions {
 public class SipaaBuildMain
 {
     public static List<Project> ProjectTemplates = new();
-
+    public static Dictionary<string, PluginConfigInfo> configInfos = new();
+    
     public static void CallPluginEntries()
     {
         // Get all loaded assemblies
@@ -159,10 +108,8 @@ public class SipaaBuildMain
         foreach (string path in paths)
         {
             string fullPath = System.IO.Path.Combine(path, appName);
-            if (System.IO.File.Exists(fullPath))
-            {
+            if (File.Exists(fullPath))
                 return true;
-            }
         }
 
         return false;
@@ -234,6 +181,8 @@ public class SipaaBuildMain
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, "obj-RiscV64"), true);
         if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "obj-i686")))
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, "obj-i686"), true);
+        if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "obj-PowerPC")))
+            Directory.Delete(Path.Combine(Environment.CurrentDirectory, "obj-PowerPC"), true);
         if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "output")))
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, "output"), true);
         return 0;
@@ -254,6 +203,17 @@ public class SipaaBuildMain
         }
         else
         {
+            if (File.Exists("project.json"))
+            {
+                Console.Write($"[?] A project already exists in '{Environment.CurrentDirectory}'. Do you want to overwrite it? (n) ");
+                ConsoleKeyInfo k = Console.ReadKey();
+                if (k.KeyChar != 'y')
+                {
+                    Console.WriteLine("[INFO] Cancelled.");
+                    return 0;
+                }
+            }
+            
             Project projectTemplate = new();
             bool foundTemplate = false;
             bool isEmptyProject = false;
@@ -284,6 +244,7 @@ public class SipaaBuildMain
             projectTemplate.Description = opts.Description;
             projectTemplate.Copyright = opts.Copyright;
             projectTemplate.License = opts.License;
+            projectTemplate.PredefinedTargets = new[] { "" };
             if (projectTemplate.Targets == null)
                 projectTemplate.Targets = new Target[] {
 
@@ -299,26 +260,60 @@ public class SipaaBuildMain
         return 0;
     }
 
+    static int Config(ConfigOptions opts)
+    {
+        if (!string.IsNullOrEmpty(opts.Key))
+        {
+            string[] keySplit = opts.Key.Split('.');
+            PluginConfigInfo pci = null;
+
+            foreach (var v in configInfos)
+            {
+                if (v.Key == keySplit[0])
+                {
+                    pci = v.Value;
+                    break;
+                }
+            }
+
+            if (pci == null)
+            {
+                Console.WriteLine($"[FAIL] Key references an unknown plugin config entry '{keySplit[0]}'");
+                return 1;
+            }
+
+            if (string.IsNullOrEmpty(opts.NewValue))
+            {
+                Console.WriteLine($"Value of '{opts.Key}': '{ConfigManager.GetFieldValueInType(pci.configType, keySplit[1], pci.configInstance).ToString()}'");
+                return 0;
+            }
+            
+            ConfigManager.SetFieldValueInType(pci.configType, keySplit[1], pci.configInstance, opts.NewValue);
+            pci.saveConfig();
+            Console.WriteLine($"Successfully set '{opts.Key}' to '{opts.NewValue}'");
+            return 0;
+        }
+        
+        Console.WriteLine("[FAIL] Key should doesn't be empty");
+        return 1;
+    }
+    
     static int Main(string[] args)
     {
         SKConfig.Load();
 
         if (File.Exists("project.json"))
-            Project.CurrentProject = JsonConvert.DeserializeObject<Project>(File.ReadAllText("project.json"));
+            Project.CurrentProject = Project.LoadProject(File.ReadAllText("project.json"));
 
         CallPluginEntries();
 
-        return CommandLine.Parser.Default.ParseArguments<BuildOptions, NewOptions, CleanOptions, ConfigureOptions, DoctorOptions>(args)
+        return CommandLine.Parser.Default.ParseArguments<BuildOptions, NewOptions, CleanOptions, DoctorOptions, ConfigOptions>(args)
             .MapResult(
             (NewOptions opts) => New(opts),
             (DoctorOptions opts) => Doctor(opts),
             (BuildOptions opts) => Builder.Build(opts),
             (CleanOptions opts) => Clean(opts),
-            (ConfigureOptions opts) => {
-                Application.Run<MainFrame>();
-                Application.Shutdown();
-                return 0;
-            },
+            (ConfigOptions opts) => Config(opts),
             errs => 1);
     }
 }

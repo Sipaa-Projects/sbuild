@@ -112,6 +112,12 @@ public class Builder
 
     public static int Build(BuildOptions opt)
     {
+        if (Project.CurrentProject == null)
+        {
+            Console.WriteLine("[FAIL] The current directory doesn't contain any project.");
+            return 1;
+        }
+        
         BuildEventArgs evargs;
         Dictionary<string, string> vars = new();
 

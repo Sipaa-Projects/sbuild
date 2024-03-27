@@ -4,14 +4,18 @@ using SipaaKernel.Builder.Model;
 namespace SipaaKernel.Builder.Plugins;
 
 /// <summary>
-/// DevKitPro's WUT integration for SK-Build.
+/// DevKitPro integration for SK-Build, allowing the developement of homebrew for Nintendo consoles.
+///
+/// Supported platforms:
+/// * Nintendo Wii U
 /// </summary>
-public static class WiiUToolchainPlugin
+public static class NintendevPlugin
 {
     [PluginEntryPoint]
     static void PMain() // Will be called when
     {
         bool wiiu_converttorpx = true;
+        
         Builder.PreBuild += new((s,e) => {
             if (e.CurrentBuildTarget.Name == "wiiu")
             {
