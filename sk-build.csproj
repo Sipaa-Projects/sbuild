@@ -1,23 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>SipaaKernel.Builder</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AssemblyName>sbuild</AssemblyName>
-    <IsPackable>false</IsPackable>
-    <Company>None</Company>
-    <Product>sipaabuilder</Product>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <FileVersion>1.0.0</FileVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <RootNamespace>SipaaKernel.Builder</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>sbuild</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <Company>None</Company>
+        <Product>sipaabuilder</Product>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Terminal.Gui" Version="2.0.0-pre.210" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="Terminal.Gui" Version="2.0.0-pre.210"/>
+    </ItemGroup>
 
 </Project>

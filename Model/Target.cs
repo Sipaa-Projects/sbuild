@@ -1,22 +1,19 @@
-using System.Collections.Generic;
-using Newtonsoft.Json;
-
 namespace SipaaKernel.Builder.Model;
 
 public class Target
 {
-    public string Name;
-    public string Description;
-    public string CC;
-    public string CXX;
-    public string LD;
+    public Architecture Architecture;
     public string ASM;
-    public string[] CCFlags;
-    public string[] CXXFlags;
     public string[] ASMFlags;
+    public string CC;
+    public string[] CCFlags;
+    public Dictionary<string, object> CustomProperties;
+    public string CXX;
+    public string[] CXXFlags;
+    public string Description;
+    public string LD;
     public string[] LDFlags;
     public string LDScript;
+    public string Name;
     public string OutputBinary;
-    public Dictionary<string, object> CustomProperties;
-    public Architecture Architecture;
 }

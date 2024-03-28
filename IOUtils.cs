@@ -6,12 +6,9 @@ public class IOUtils
     {
         List<string> FilePaths = new();
         var fileList = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories)
-                             .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
-                             .ToArray();
-        foreach (string f in fileList)
-        {
-            FilePaths.Add(f);
-        }
+            .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
+            .ToArray();
+        foreach (var f in fileList) FilePaths.Add(f);
         return FilePaths;
     }
 }

@@ -35,7 +35,8 @@ public class NewOptions
 }
 
 [Verb("build", HelpText = "Build a project.")]
-public class BuildOptions {
+public class BuildOptions
+{
     //normal options here
     [Option('t', "target", Required = false, HelpText = "The target that SK-Build will use to build the project.")]
     public string Target { get; set; } = "none";
@@ -57,7 +58,8 @@ public class CleanOptions
 }
 
 [Verb("doctor", HelpText = "Check if the required packages are on your PC.")]
-public class DoctorOptions {
+public class DoctorOptions
+{
     [Option('t', "toolchain", Required = false, HelpText = "The toolchain that SK-Build will use to build a project.")]
     public string Toolchain { get; set; } = "gnu";
 }
@@ -66,11 +68,11 @@ public class SipaaBuildMain
 {
     public static List<Project> ProjectTemplates = new();
     public static Dictionary<string, PluginConfigInfo> configInfos = new();
-    
+
     public static void CallPluginEntries()
     {
         // Get all loaded assemblies
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList<Assembly>();
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
         assemblies.Add(Assembly.GetExecutingAssembly());
 
         foreach (var assembly in assemblies)
@@ -86,45 +88,44 @@ public class SipaaBuildMain
                 var methods = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
                 foreach (var method in methods)
-                {
                     //Console.WriteLine($"[PLOAD] Scanning method {method.Name} in {type.FullName} in {assembly.FullName}");
-
                     // Check if the method has the FooAttribute
                     if (method.GetCustomAttributes(typeof(PluginEntryPointAttribute), true).Length > 0)
-                    {
-                        method.Invoke(null, new object[] {});
-                        //Console.WriteLine($"[PLOAD] Found method '{method.Name}' with FooAttribute in class '{type.FullName}'");
-                    }
-                }
+                        method.Invoke(null, new object[] { });
+                //Console.WriteLine($"[PLOAD] Found method '{method.Name}' with FooAttribute in class '{type.FullName}'");
             }
         }
     }
 
-    static bool IsCliAppInPath(string appName)
+    private static bool IsCliAppInPath(string appName)
     {
-        string pathVariable = Environment.GetEnvironmentVariable("PATH");
-        string[] paths = pathVariable.Split(';');
+        var pathVariable = Environment.GetEnvironmentVariable("PATH");
+        var paths = pathVariable.Split(';');
 
-        foreach (string path in paths)
+        foreach (var path in paths)
         {
-            string fullPath = System.IO.Path.Combine(path, appName);
+            var fullPath = Path.Combine(path, appName);
             if (File.Exists(fullPath))
                 return true;
         }
 
         return false;
     }
-    static void CheckApp(string appName, string appDesc, List<string> appsToInstall)
+
+    private static void CheckApp(string appName, string appDesc, List<string> appsToInstall)
     {
         if (IsCliAppInPath(appName))
+        {
             Console.WriteLine($"            * {appDesc} => available");
+        }
         else
         {
             Console.WriteLine($"            * {appDesc} => not available");
             appsToInstall.Add(appName);
         }
     }
-    static int Doctor(DoctorOptions opts)
+
+    private static int Doctor(DoctorOptions opts)
     {
         Console.WriteLine("[INFO] Running doctor...");
         List<string> ati = new();
@@ -157,10 +158,8 @@ public class SipaaBuildMain
         {
             Console.WriteLine("[INFO] Not every tool required to build SK isn't present.");
             Console.WriteLine("[INST] Please install the following packages and try again :");
-            foreach (string a in ati)
-            {
+            foreach (var a in ati)
                 Console.WriteLine($"            * {a} : {DoctorCommentProvider.GetCommentForApp(a)}");
-            }
         }
         else
         {
@@ -169,7 +168,8 @@ public class SipaaBuildMain
 
         return 0;
     }
-    static int Clean(CleanOptions opts)
+
+    private static int Clean(CleanOptions opts)
     {
         if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, ".skb")))
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, ".skb"), true);
@@ -187,13 +187,16 @@ public class SipaaBuildMain
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, "output"), true);
         return 0;
     }
-    
-    static int New(NewOptions opts)
+
+    private static int New(NewOptions opts)
     {
         if (opts.ShowTemplates)
         {
             if (ProjectTemplates.Count == 0)
-                Console.WriteLine("No templates are available. You can still create empty projects by entering whatever you want in the template command line argument.");
+            {
+                Console.WriteLine(
+                    "No templates are available. You can still create empty projects by entering whatever you want in the template command line argument.");
+            }
             else
             {
                 Console.WriteLine("Available templates: ");
@@ -205,40 +208,41 @@ public class SipaaBuildMain
         {
             if (File.Exists("project.json"))
             {
-                Console.Write($"[?] A project already exists in '{Environment.CurrentDirectory}'. Do you want to overwrite it? (n) ");
-                ConsoleKeyInfo k = Console.ReadKey();
+                Console.Write(
+                    $"[?] A project already exists in '{Environment.CurrentDirectory}'. Do you want to overwrite it? (n) ");
+                var k = Console.ReadKey();
                 if (k.KeyChar != 'y')
                 {
                     Console.WriteLine("[INFO] Cancelled.");
                     return 0;
                 }
             }
-            
+
             Project projectTemplate = new();
-            bool foundTemplate = false;
-            bool isEmptyProject = false;
+            var foundTemplate = false;
+            var isEmptyProject = false;
             foreach (var i in ProjectTemplates)
-            {
                 if (i.Name == opts.Template)
                 {
                     foundTemplate = true;
                     projectTemplate = i.SecureClone();
                     if (projectTemplate == null)
                     {
-                        Console.WriteLine($"[WARN] Trying to clone project template '{i.Name}' failed. Creating an empty project...");
-                        projectTemplate = new();
+                        Console.WriteLine(
+                            $"[WARN] Trying to clone project template '{i.Name}' failed. Creating an empty project...");
+                        projectTemplate = new Project();
                         isEmptyProject = true;
                     }
                 }
-            }
 
             if (!foundTemplate)
             {
-                Console.WriteLine($"[WARN] Cannot find any project template with name '{opts.Template}'. Creating an empty project...");
-                projectTemplate = new();
+                Console.WriteLine(
+                    $"[WARN] Cannot find any project template with name '{opts.Template}'. Creating an empty project...");
+                projectTemplate = new Project();
                 isEmptyProject = true;
             }
-            
+
             DirectoryInfo di = new(Environment.CurrentDirectory);
             projectTemplate.Name = di.Name;
             projectTemplate.Description = opts.Description;
@@ -246,35 +250,34 @@ public class SipaaBuildMain
             projectTemplate.License = opts.License;
             projectTemplate.PredefinedTargets = new[] { "" };
             if (projectTemplate.Targets == null)
-                projectTemplate.Targets = new Target[] {
-
+                projectTemplate.Targets = new Target[]
+                {
                 };
 
             File.WriteAllText("project.json", JsonConvert.SerializeObject(projectTemplate, Formatting.Indented));
-            
+
             if (isEmptyProject)
                 Console.WriteLine($"Created project '{di.Name}' in '{di.FullName}'.");
             else
                 Console.WriteLine($"Created project '{di.Name}' in '{di.FullName}' from template '{opts.Template}'.");
         }
+
         return 0;
     }
 
-    static int Config(ConfigOptions opts)
+    private static int Config(ConfigOptions opts)
     {
         if (!string.IsNullOrEmpty(opts.Key))
         {
-            string[] keySplit = opts.Key.Split('.');
+            var keySplit = opts.Key.Split('.');
             PluginConfigInfo pci = null;
 
             foreach (var v in configInfos)
-            {
                 if (v.Key == keySplit[0])
                 {
                     pci = v.Value;
                     break;
                 }
-            }
 
             if (pci == null)
             {
@@ -284,36 +287,54 @@ public class SipaaBuildMain
 
             if (string.IsNullOrEmpty(opts.NewValue))
             {
-                Console.WriteLine($"Value of '{opts.Key}': '{ConfigManager.GetFieldValueInType(pci.configType, keySplit[1], pci.configInstance).ToString()}'");
+                Console.WriteLine(
+                    $"Value of '{opts.Key}': '{ConfigManager.GetFieldValueInType(pci.configType, keySplit[1], pci.configInstance)}'");
                 return 0;
             }
-            
+
             ConfigManager.SetFieldValueInType(pci.configType, keySplit[1], pci.configInstance, opts.NewValue);
             pci.saveConfig();
             Console.WriteLine($"Successfully set '{opts.Key}' to '{opts.NewValue}'");
             return 0;
         }
-        
+
         Console.WriteLine("[FAIL] Key should doesn't be empty");
         return 1;
     }
-    
-    static int Main(string[] args)
+
+    private static int Main(string[] args)
     {
-        SKConfig.Load();
+        try
+        {
+            SKConfig.Load();
 
-        if (File.Exists("project.json"))
-            Project.CurrentProject = Project.LoadProject(File.ReadAllText("project.json"));
+            if (File.Exists("project.json"))
+                Project.CurrentProject = Project.LoadProject(File.ReadAllText("project.json"));
 
-        CallPluginEntries();
+            CallPluginEntries();
 
-        return CommandLine.Parser.Default.ParseArguments<BuildOptions, NewOptions, CleanOptions, DoctorOptions, ConfigOptions>(args)
-            .MapResult(
-            (NewOptions opts) => New(opts),
-            (DoctorOptions opts) => Doctor(opts),
-            (BuildOptions opts) => Builder.Build(opts),
-            (CleanOptions opts) => Clean(opts),
-            (ConfigOptions opts) => Config(opts),
-            errs => 1);
+            if (args[0] == "--version")
+            {
+                Console.WriteLine($"Sipaa Builder v{Assembly.GetExecutingAssembly().GetName().Version}");
+                Console.WriteLine("Copyright (C) 2023-present Sipaa Projects");
+                Console.WriteLine();
+                Console.WriteLine("This program come AS-IS without ANY warranty of ANY kind.");
+                return 0;
+            }
+
+            return Parser.Default.ParseArguments<BuildOptions, NewOptions, CleanOptions, DoctorOptions, ConfigOptions>(args)
+                .MapResult(
+                    (NewOptions opts) => New(opts),
+                    (DoctorOptions opts) => Doctor(opts),
+                    (BuildOptions opts) => Builder.Build(opts),
+                    (CleanOptions opts) => Clean(opts),
+                    (ConfigOptions opts) => Config(opts),
+                    errs => 1);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("[FAIL] " + e.Message);
+            throw;
+        }
     }
 }

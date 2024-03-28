@@ -6,22 +6,23 @@
 #include <whb/log_console.h>
 
 int
-main(int argc, char **argv)
+main(int argc, char** argv)
 {
-   WHBProcInit();
-   WHBLogConsoleInit();
-   WHBLogPrintf("Hello World!");
+    WHBProcInit();
+    WHBLogConsoleInit();
+    WHBLogPrintf("Hello World!");
 
-   while(WHBProcIsRunning()) {
-      WHBLogConsoleDraw();
-      OSSleepTicks(OSMillisecondsToTicks(100));
-   }
+    while (WHBProcIsRunning())
+    {
+        WHBLogConsoleDraw();
+        OSSleepTicks(OSMillisecondsToTicks(100));
+    }
 
-   WHBLogPrintf("Exiting... good bye.");
-   WHBLogConsoleDraw();
-   OSSleepTicks(OSMillisecondsToTicks(1000));
+    WHBLogPrintf("Exiting... good bye.");
+    WHBLogConsoleDraw();
+    OSSleepTicks(OSMillisecondsToTicks(1000));
 
-   WHBLogConsoleFree();
-   WHBProcShutdown();
-   return 0;
+    WHBLogConsoleFree();
+    WHBProcShutdown();
+    return 0;
 }

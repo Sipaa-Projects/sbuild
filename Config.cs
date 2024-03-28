@@ -4,25 +4,29 @@ using Newtonsoft.Json;
 namespace SipaaKernel.Builder;
 
 /// <summary>
-/// Subject to be removed. Will be implemented througth a SK-Build plugin.
+///     Subject to be removed. Will be implemented througth a SK-Build plugin.
 /// </summary>
 public class SKConfig
 {
-    [JsonIgnore]
-    public static SKConfig? Current { get; set; } = null;
+    [JsonIgnore] public static SKConfig? Current { get; set; }
+
+    public bool EnablePCIC { get; set; } = false;
+    public bool LogsConIO { get; set; } = false;
+    public string AdditionalCompileOptions { get; set; } = "";
 
     public static bool Save()
     {
         try
         {
-            if (Current != null) 
+            if (Current != null)
             {
-                string json = JsonConvert.SerializeObject(Current);
+                var json = JsonConvert.SerializeObject(Current);
                 File.WriteAllText(Path.Join(Environment.CurrentDirectory, "skconfig.json"), json);
             }
+
             return true;
         }
-        catch 
+        catch
         {
             return false;
         }
@@ -32,14 +36,15 @@ public class SKConfig
     {
         try
         {
-            if (Current != null) 
+            if (Current != null)
             {
-                string json = JsonConvert.SerializeObject(Current, Formatting.Indented);
+                var json = JsonConvert.SerializeObject(Current, Formatting.Indented);
                 File.WriteAllText(to, json);
             }
+
             return true;
         }
-        catch 
+        catch
         {
             return false;
         }
@@ -51,21 +56,19 @@ public class SKConfig
         {
             if (!File.Exists(Path.Join(Environment.CurrentDirectory, "skconfig.json")))
             {
-                Current = new();
+                Current = new SKConfig();
                 return true;
             }
-            Current = JsonConvert.DeserializeObject<SKConfig>(File.ReadAllText(Path.Join(Environment.CurrentDirectory, "skconfig.json")));
+
+            Current = JsonConvert.DeserializeObject<SKConfig>(
+                File.ReadAllText(Path.Join(Environment.CurrentDirectory, "skconfig.json")));
             return true;
         }
-        catch 
+        catch
         {
             return false;
         }
     }
-
-    public bool EnablePCIC { get; set; } = false;
-    public bool LogsConIO { get; set; } = false;
-    public string AdditionalCompileOptions { get; set; } = "";
 }
 
 public enum ConfigRequest
@@ -78,28 +81,30 @@ public enum ConfigRequest
 
 public class ConfigResult
 {
+    public Exception error;
     public string response;
     public bool success;
-    public Exception error;
 }
 
 public class PluginConfigInfo
 {
-    public Action saveConfig;
     public object configInstance;
     public Type configType;
+    public Action saveConfig;
 }
 
 public class ConfigManager
 {
-    private static string SbUserDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".skb");
-    private static string SbUserConfig = Path.Combine(SbUserDir, "conf");
+    private static readonly string SbUserDir =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".skb");
+
+    private static readonly string SbUserConfig = Path.Combine(SbUserDir, "conf");
 
     private static void EnsureDirectories()
     {
         if (!Directory.Exists(SbUserDir))
             Directory.CreateDirectory(SbUserDir);
-        
+
         if (!Directory.Exists(SbUserConfig))
             Directory.CreateDirectory(SbUserConfig);
     }
@@ -108,16 +113,18 @@ public class ConfigManager
     {
         EnsureDirectories();
 
-        string cfgFileName;
+        string cfgFileName = Path.Combine(SbUserConfig, $"{pluginName}.json");
+
+        output = cfgFileName;
         
-        if (!TryFindConfig(pluginName, out output))
+        if (!File.Exists(cfgFileName))
             return false;
         return true;
     }
 
     public static object GetFieldValueInType(Type t, string fieldName, object instance)
     {
-        FieldInfo? p = t.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var p = t.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
         if (p != null)
             return p.GetValue(instance);
@@ -127,9 +134,9 @@ public class ConfigManager
 
     public static void SetFieldValueInType(Type t, string fieldName, object instance, object newValue)
     {
-        FieldInfo? p = t.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var p = t.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
         if (p != null)
-             p.SetValue(instance, newValue);
+            p.SetValue(instance, newValue);
     }
 }
